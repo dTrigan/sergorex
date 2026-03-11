@@ -1,0 +1,49 @@
+{
+  "name": "Django Processor",
+  "guid": "asc.{7A9F3B2C-1D4E-4F8A-9C6B-2E5D7F0A1B3C}",
+  "version": "1.0.0",
+  "minVersion": "6.0.0",
+  "description": "Отправляет данные таблицы на Django-сервер для обработки Python-макросом",
+  "author": "Custom Plugin",
+  "homepage": "",
+  "icons": {
+    "normal": "icon.png",
+    "2x": "icon@2x.png"
+  },
+  "isViewer": false,
+  "EditorsSupport": ["cell"],
+  "isSystem": false,
+  "isDisplayedInViewer": false,
+  "customization": {
+    "isEmbedded": false,
+    "initDataType": "none",
+    "initData": "",
+    "isInsertTool": false
+  },
+  "store": {
+    "background": {
+      "cross": "#1a1a2e",
+      "mobile": "#1a1a2e"
+    }
+  },
+  "variations": [
+    {
+      "description": "Django Processor",
+      "url": "index.html",
+      "icons": {
+        "normal": "icon.png",
+        "2x": "icon@2x.png"
+      },
+      "isViewer": false,
+      "EditorsSupport": ["cell"],
+      "isSystem": false,
+      "isDisplayedInViewer": false,
+      "customization": {
+        "isEmbedded": false,
+        "initDataType": "none",
+        "initData": "",
+        "isInsertTool": false
+      }
+    }
+  ]
+}

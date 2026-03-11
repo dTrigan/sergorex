@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Django Processor</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Unbounded:wght@300;600&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0d0f1a;
+      --surface:  #151728;
+      --border:   #252847;
+      --accent:   #5c6ef8;
+      --accent2:  #38d9a9;
+      --danger:   #f06595;
+      --text:     #e8eaf6;
+      --muted:    #6b7280;
+      --mono:     'JetBrains Mono', monospace;
+      --head:     'Unbounded', sans-serif;
+    }
+
+    body {
+      font-family: var(--mono);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      overflow-x: hidden;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 16px 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .logo {
+      width: 28px; height: 28px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 700; color: #fff;
+      font-family: var(--head);
+      flex-shrink: 0;
+    }
+    .header-title {
+      font-family: var(--head);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .06em;
+      color: var(--text);
+    }
+    .header-sub {
+      font-size: 9px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    /* ── Body ── */
+    .body { padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; flex: 1; }
+
+    /* ── Field ── */
+    .field { display: flex; flex-direction: column; gap: 5px; }
+    label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: .08em;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+    input, select {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 10px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 11px;
+      outline: none;
+      transition: border-color .2s;
+      width: 100%;
+    }
+    input:focus, select:focus { border-color: var(--accent); }
+    input::placeholder { color: var(--muted); }
+
+    /* ── Range selector ── */
+    .range-row { display: flex; gap: 6px; }
+    .range-row input { flex: 1; }
+    .btn-pick {
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0 10px;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 10px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all .2s;
+    }
+    .btn-pick:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    /* ── Options row ── */
+    .options-row { display: flex; gap: 6px; }
+    .options-row select { flex: 1; }
+
+    /* ── Divider ── */
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 2px 0;
+    }
+
+    /* ── Status ── */
+    .status {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-size: 10px;
+      min-height: 34px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--muted);
+      transition: all .3s;
+    }
+    .status.ok    { border-color: var(--accent2); color: var(--accent2); }
+    .status.error { border-color: var(--danger);  color: var(--danger); }
+    .status.busy  { border-color: var(--accent);  color: var(--accent); }
+
+    .dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: currentColor; flex-shrink: 0;
+    }
+    .dot.spin {
+      animation: pulse 1s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+    /* ── Action buttons ── */
+    .actions { display: flex; flex-direction: column; gap: 7px; }
+
+    .btn {
+      width: 100%;
+      padding: 10px;
+      border-radius: 7px;
+      border: none;
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .04em;
+      cursor: pointer;
+      transition: all .2s;
+      display: flex; align-items: center; justify-content: center; gap: 7px;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #7c8cf8);
+      color: #fff;
+    }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 18px rgba(92,110,248,.4); }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-primary:disabled { opacity: .45; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    .btn-secondary {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+    .btn-secondary:hover { border-color: var(--accent2); color: var(--accent2); }
+
+    /* ── Log ── */
+    .log {
+      background: #080a12;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-size: 10px;
+      color: var(--muted);
+      max-height: 80px;
+      overflow-y: auto;
+      line-height: 1.6;
+      flex: 1;
+    }
+    .log .entry { display: flex; gap: 6px; }
+    .log .ts { color: #3d4166; flex-shrink: 0; }
+    .log .msg-ok    { color: var(--accent2); }
+    .log .msg-err   { color: var(--danger); }
+    .log .msg-info  { color: #7b83d4; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">D</div>
+  <div>
+    <div class="header-title">Django Processor</div>
+    <div class="header-sub">Обработка таблиц через Python-макрос</div>
+  </div>
+</div>
+
+<div class="body">
+
+  <!-- Server URL -->
+  <div class="field">
+    <label>URL сервера</label>
+    <input id="serverUrl" type="text" placeholder="http://localhost:8000/api/process/"
+           value="http://localhost:8000/api/process/" />
+  </div>
+
+  <!-- Range -->
+  <div class="field">
+    <label>Диапазон ячеек</label>
+    <div class="range-row">
+      <input id="rangeInput" type="text" placeholder="A1:Z100 или оставьте пустым" />
+      <button class="btn-pick" onclick="pickSelection()">↗ выбор</button>
+    </div>
+  </div>
+
+  <!-- Options -->
+  <div class="options-row">
+    <div class="field" style="flex:1">
+      <label>Заголовки</label>
+      <select id="hasHeaders">
+        <option value="true">Первая строка</option>
+        <option value="false">Нет заголовков</option>
+      </select>
+    </div>
+    <div class="field" style="flex:1">
+      <label>Вставить результат</label>
+      <select id="insertMode">
+        <option value="same">На то же место</option>
+        <option value="new_col">Новый столбец</option>
+        <option value="new_sheet">Новый лист</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Status -->
+  <div class="status" id="status">
+    <div class="dot"></div>
+    <span id="statusText">Готов к работе</span>
+  </div>
+
+  <!-- Buttons -->
+  <div class="actions">
+    <button class="btn btn-primary" id="btnProcess" onclick="processTable()">
+      ▶ Отправить и обработать
+    </button>
+    <button class="btn btn-secondary" onclick="testConnection()">
+      ◎ Проверить соединение
+    </button>
+  </div>
+
+  <!-- Log -->
+  <div class="log" id="log">
+    <div class="entry"><span class="ts">--:--:--</span><span class="msg-info">Плагин загружен</span></div>
+  </div>
+
+</div>
+
+<script type="text/javascript">
+  // ── Helpers ───────────────────────────────────────────────────────────────
+
+  function log(msg, type = 'info') {
+    const el = document.getElementById('log');
+    const ts = new Date().toTimeString().slice(0,8);
+    el.innerHTML += `<div class="entry"><span class="ts">${ts}</span><span class="msg-${type}">${msg}</span></div>`;
+    el.scrollTop = el.scrollHeight;
+  }
+
+  function setStatus(text, cls = '') {
+    const s = document.getElementById('status');
+    const dot = s.querySelector('.dot');
+    s.className = 'status ' + cls;
+    dot.className = 'dot' + (cls === 'busy' ? ' spin' : '');
+    document.getElementById('statusText').textContent = text;
+  }
+
+  function setBusy(busy) {
+    document.getElementById('btnProcess').disabled = busy;
+  }
+
+  // ── Pick current selection ────────────────────────────────────────────────
+
+  function pickSelection() {
+    Asc.plugin.executeMethod('GetSelection', [], function(range) {
+      if (range) {
+        document.getElementById('rangeInput').value = range;
+        log('Выбран диапазон: ' + range, 'ok');
+      }
+    });
+  }
+
+  // ── Read sheet data ───────────────────────────────────────────────────────
+
+  function readSheetData(callback) {
+    const rangeStr = document.getElementById('rangeInput').value.trim();
+
+    // Get active sheet name
+    Asc.plugin.executeMethod('GetActiveSheet', [], function(sheetName) {
+
+      if (rangeStr) {
+        // Read specified range
+        Asc.plugin.executeMethod('GetRange', [sheetName, rangeStr], function(rangeData) {
+          callback(rangeData, sheetName, rangeStr);
+        });
+      } else {
+        // Read used range automatically
+        Asc.plugin.executeMethod('GetUsedRange', [sheetName], function(usedRange) {
+          if (!usedRange) { callback(null, sheetName, null); return; }
+          Asc.plugin.executeMethod('GetRange', [sheetName, usedRange], function(rangeData) {
+            document.getElementById('rangeInput').value = usedRange;
+            callback(rangeData, sheetName, usedRange);
+          });
+        });
+      }
+    });
+  }
+
+  // ── Write result back ─────────────────────────────────────────────────────
+
+  function writeResult(result, sheetName, originalRange) {
+    const mode = document.getElementById('insertMode').value;
+
+    if (mode === 'same') {
+      // Parse start cell from original range (e.g. "A1:C10" → "A1")
+      const startCell = originalRange ? originalRange.split(':')[0] : 'A1';
+      Asc.plugin.executeMethod('SetRangeValue', [sheetName, startCell, result.data], function() {
+        log('Данные записаны в ' + startCell, 'ok');
+      });
+
+    } else if (mode === 'new_col') {
+      // Write to the right of the last used column
+      Asc.plugin.executeMethod('GetUsedRange', [sheetName], function(usedRange) {
+        const lastCol = usedRange ? usedRange.split(':')[1].replace(/[0-9]/g, '') : 'A';
+        const nextCol = nextColumn(lastCol);
+        Asc.plugin.executeMethod('SetRangeValue', [sheetName, nextCol + '1', result.data], function() {
+          log('Результат записан в столбец ' + nextCol, 'ok');
+        });
+      });
+
+    } else if (mode === 'new_sheet') {
+      const newName = 'Результат_' + new Date().toISOString().slice(11,19).replace(/:/g,'-');
+      Asc.plugin.executeMethod('AddSheet', [newName], function() {
+        Asc.plugin.executeMethod('SetRangeValue', [newName, 'A1', result.data], function() {
+          log('Создан лист «' + newName + '» с результатом', 'ok');
+        });
+      });
+    }
+  }
+
+  // Advance Excel column letter (A → B, Z → AA)
+  function nextColumn(col) {
+    let result = '';
+    let carry = 1;
+    for (let i = col.length - 1; i >= 0; i--) {
+      let c = col.charCodeAt(i) - 65 + carry;
+      carry = Math.floor(c / 26);
+      result = String.fromCharCode((c % 26) + 65) + result;
+    }
+    if (carry) result = 'A' + result;
+    return result;
+  }
+
+  // ── Main: process table ───────────────────────────────────────────────────
+
+  function processTable() {
+    const url = document.getElementById('serverUrl').value.trim();
+    if (!url) { setStatus('Укажите URL сервера', 'error'); return; }
+
+    setBusy(true);
+    setStatus('Считываем данные таблицы…', 'busy');
+    log('Начало обработки…', 'info');
+
+    readSheetData(function(rangeData, sheetName, rangeStr) {
+      if (!rangeData || !rangeData.length) {
+        setStatus('Нет данных для отправки', 'error');
+        log('Пустой диапазон или ошибка чтения', 'err');
+        setBusy(false);
+        return;
+      }
+
+      const hasHeaders = document.getElementById('hasHeaders').value === 'true';
+
+      const payload = {
+        sheet:      sheetName,
+        range:      rangeStr,
+        hasHeaders: hasHeaders,
+        data:       rangeData   // 2D array [[row], [row], …]
+      };
+
+      setStatus('Отправляем на сервер…', 'busy');
+      log('Отправка ' + rangeData.length + ' строк на ' + url, 'info');
+
+      fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      .then(function(resp) {
+        if (!resp.ok) throw new Error('HTTP ' + resp.status + ' ' + resp.statusText);
+        return resp.json();
+      })
+      .then(function(result) {
+        if (!result.data) throw new Error('Сервер вернул ответ без поля data');
+
+        setStatus('Записываем результат…', 'busy');
+        log('Получено ' + result.data.length + ' строк от сервера', 'ok');
+
+        writeResult(result, sheetName, rangeStr);
+
+        const info = result.info ? ' — ' + result.info : '';
+        setStatus('Готово!' + info, 'ok');
+        log('Обработка завершена' + info, 'ok');
+        setBusy(false);
+      })
+      .catch(function(err) {
+        setStatus('Ошибка: ' + err.message, 'error');
+        log('Ошибка: ' + err.message, 'err');
+        setBusy(false);
+      });
+    });
+  }
+
+  // ── Test connection ───────────────────────────────────────────────────────
+
+  function testConnection() {
+    const url = document.getElementById('serverUrl').value.trim();
+    if (!url) { setStatus('Укажите URL сервера', 'error'); return; }
+
+    const pingUrl = url.replace(/\/process\/?$/, '/ping/');
+    setStatus('Проверяем соединение…', 'busy');
+    log('Ping → ' + pingUrl, 'info');
+
+    fetch(pingUrl, { method: 'GET' })
+      .then(function(r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      })
+      .then(function(d) {
+        setStatus('Сервер доступен ✓', 'ok');
+        log('Pong: ' + JSON.stringify(d), 'ok');
+      })
+      .catch(function(e) {
+        setStatus('Сервер недоступен', 'error');
+        log('Ping failed: ' + e.message, 'err');
+      });
+  }
+
+  // ── Plugin lifecycle ──────────────────────────────────────────────────────
+
+  window.Asc = window.Asc || {};
+  window.Asc.plugin = window.Asc.plugin || {
+    executeMethod: function(method, args, cb) {
+      // Stub for development outside R7 — simulate data
+      console.log('[stub] executeMethod:', method, args);
+      if (method === 'GetActiveSheet') cb('Sheet1');
+      else if (method === 'GetSelection' || method === 'GetUsedRange') cb('A1:D5');
+      else if (method === 'GetRange') cb([
+        ['Имя','Возраст','Город','Оценка'],
+        ['Алиса',28,'Москва',85],
+        ['Борис',34,'СПб',92],
+        ['Вера',22,'Казань',78]
+      ]);
+      else if (cb) cb(true);
+    }
+  };
+
+  (function() {
+    if (typeof Asc !== 'undefined' && Asc.plugin && Asc.plugin.init) {
+      Asc.plugin.init = function() { log('Плагин инициализирован в Р7 Офис', 'ok'); };
+      Asc.plugin.button = function(id) {};
+    }
+  })();
+</script>
+</body>
+</html>
